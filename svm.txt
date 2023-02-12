@@ -1,0 +1,214 @@
+SVM.ipynb
+
+Code cell <5af3kZbamp3W>
+#%% [code]
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import numpy as np
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
+from matplotlib import pyplot as plt
+df=pd.read_csv('/content/dataset.csv')
+
+Code cell <OExjHHpVrORv>
+#%% [code]
+class SVM_classifier():
+
+  def __init__(self,learning_rate,no_of_iterations,lambda_parameter):
+    self.learning_rate=learning_rate
+    self.no_of_iterations=no_of_iterations
+    self.lambda_parameter=lambda_parameter
+
+
+
+  def fit(self,X,Y):
+    self.m,self.n=X.shape
+    self.w=np.zeros(self.n)
+    self.b=0
+    self.X=X
+    self.Y=Y
+
+    for i in range(self.no_of_iterations):
+      self.update_weights()
+
+  def update_weights(self):
+    y_label=np.where(self.Y <=0,-1,1)
+
+
+    for index,x_i in enumerate(self.X):
+      condition=y_label[index]*(np.dot(x_i,self.w)-self.b)>=1
+
+      if (condition==True):
+        dw=2*self.lambda_parameter*self.w
+        db=0
+      else:
+        dw=2*self.lambda_parameter*self.w-np.dot(x_i,y_label[index])
+        db=y_label[index]
+
+      self.w=self.w-self.learning_rate*dw
+      self.b=self.b-self.learning_rate*db
+  
+  def predict(self,X):
+    output=np.dot(X,self.w)-self.b
+    predicted_labels=np.sign(output)
+    y_hat=np.where(predicted_labels<=-1,0,1)
+    return y_hat
+
+
+
+
+Code cell <qeyaUZ667YtR>
+#%% [code]
+df.head()
+Execution output from Jan 19, 2022 9:47 PM
+7KB
+	text/plain
+		age  workclass    fnlwgt  ...  hours-per-week  native-country  target
+		0  29.0          6   69132.0  ...            60.0              39       0
+		1  25.0          4  191271.0  ...            40.0              39       1
+		2  63.0          6  167501.0  ...            10.0              39       0
+		3  17.0          0  127003.0  ...            40.0              39       1
+		4  54.0          4  329733.0  ...            40.0              39       0
+		
+		[5 rows x 15 columns]
+
+Code cell <fs6dt2UK7l2W>
+#%% [code]
+df.shape
+Execution output from Jan 19, 2022 9:47 PM
+0KB
+	text/plain
+		(39073, 15)
+
+Code cell <SoFPeq3o7tTO>
+#%% [code]
+df.describe()
+Execution output from Jan 19, 2022 9:47 PM
+9KB
+	text/plain
+		age     workclass  ...  native-country        target
+		count  39073.000000  39073.000000  ...    39073.000000  39073.000000
+		mean      38.667648      3.875515  ...       36.746219      0.761293
+		std       13.710212      1.463402  ...        7.771771      0.426299
+		min       17.000000      0.000000  ...        0.000000      0.000000
+		25%       28.000000      4.000000  ...       39.000000      1.000000
+		50%       37.000000      4.000000  ...       39.000000      1.000000
+		75%       48.000000      4.000000  ...       39.000000      1.000000
+		max       90.000000      8.000000  ...       41.000000      1.000000
+		
+		[8 rows x 15 columns]
+
+Code cell <xU8_OdBQ7wnH>
+#%% [code]
+df['target'].value_counts()
+Execution output from Jan 19, 2022 9:47 PM
+0KB
+	text/plain
+		1    29746
+		0     9327
+		Name: target, dtype: int64
+
+Code cell <JctA6PWo7-a_>
+#%% [code]
+features=df.drop(columns='target',axis=1)
+target=df['target']
+
+Code cell <0tfp9sMc8vXC>
+#%% [code]
+scaler=StandardScaler()
+
+Code cell <flVYB7Ym82UN>
+#%% [code]
+scaler.fit(features)
+Execution output from Jan 19, 2022 9:47 PM
+0KB
+	text/plain
+		StandardScaler()
+
+Code cell <ImiJK80QCXGs>
+#%% [code]
+standardized_data=scaler.transform(features)
+
+Code cell <drMkhVJYCj2U>
+#%% [code]
+features=standardized_data
+target=df['target']
+
+Code cell <hypl7DiFCvei>
+#%% [code]
+X_train, X_test, Y_train, Y_test = train_test_split(features, target, test_size=0.2, random_state=2)
+
+Code cell <VdotM8kXC30g>
+#%% [code]
+classifier=SVM_classifier(learning_rate=0.001,no_of_iterations=1000,lambda_parameter=0.01)
+
+Code cell <BgKLiRq2DVO7>
+#%% [code]
+classifier.fit(X_train,Y_train)
+
+Code cell <HV5uDYw8I8o9>
+#%% [code]
+X_train_prediction=classifier.predict(X_train)
+training_data_accuracy=accuracy_score(Y_train,X_train_prediction)
+
+Code cell <QdNMBegHPXQS>
+#%% [code]
+print('accuracy score on training data = ',training_data_accuracy)
+Execution output from Jan 19, 2022 9:54 PM
+0KB
+	Stream
+		accuracy score on training data =  0.8150233540213705
+
+Code cell <srfSKecnQBpp>
+#%% [code]
+X_test_prediction=classifier.predict(X_test)
+test_data_accuracy=accuracy_score(Y_test,X_test_prediction)
+
+Code cell <RUlQhOYgQQAB>
+#%% [code]
+print('accuracy score on test data = ',test_data_accuracy)
+Execution output from Jan 19, 2022 9:54 PM
+0KB
+	Stream
+		accuracy score on test data =  0.8065259117082534
+
+Code cell <k-XWE8z0QaSG>
+#%% [code]
+input_data=pd.read_csv('/content/datasettar11.csv')
+m,n=input_data.shape
+m,n=input_data.shape
+std_data=scaler.transform(input_data)
+prediction=classifier.predict(std_data)
+print(prediction)
+print(input_data)
+
+
+Execution output from Jan 19, 2022 9:54 PM
+1KB
+	Stream
+		[0 1 0 ... 1 1 1]
+		       age  workclass  fnlwgt  ...  capital-loss  hours-per-week  native-co
+		0       29          6   69132  ...             0              60         39
+		1       25          4  191271  ...             0              40         39
+		2       63          6  167501  ...             0              10         39
+		3       17          0  127003  ...             0              40         39
+		4       54          4  329733  ...             0              40         39
+		...    ...        ...     ...  ...           ...             ...        ...
+		39068   29          4  134331  ...             0              40         39
+		39069   52          7  184529  ...             0              40         39
+		39070   43          2  233865  ...             0              40         39
+		39071   19          4   86150  ...             0              19         30
+		39072   35          6  225399  ...             0              40         39
+		
+		[39073 rows x 14 columns]
+		/usr/local/lib/python3.7/dist-packages/sklearn/base.py:493: FutureWarning: The feature names should match those that were passed during fit. Starting version 1.2, an error will be raised.
+		Feature names unseen at fit time:
+		- native-co
+		Feature names seen at fit time, yet now missing:
+		- native-country
+		
+		  warnings.warn(message, FutureWarning)
+
+
